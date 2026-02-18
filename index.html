@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TAOBUN Revenue Dashboard</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TAOBUN">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+  @font-face {
+    font-family: 'Denton Variable';
+    src: local('Denton Variable'), local('Denton-Variable');
+    font-weight: 100 900;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Variables Mode Terang (Default) */
+  :root {
+    --primary: #d61e30; 
+    --bg: #ffffff;
+    --border: #eeeeee;
+    --text: #1a1a1a;
+    --muted: #777777;
+    --card-bg: #fcfcfc;
+    --pill-bg: #fff0f1;
+  }
+
+  /* Variables Mode Gelap */
+  [data-theme="dark"] {
+    --bg: #0a0a0f;
+    --border: #2a2a3e;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --card-bg: #1a1a26;
+    --pill-bg: rgba(214, 30, 48, 0.15);
+  }
+
+  body {
+    font-family: 'Denton Variable', serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 40px 20px;
+    transition: background 0.3s, color 0.3s;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 550px; margin: 0 auto; }
+  
+  header { 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .theme-toggle {
+    position: absolute; right: 0; top: 0;
+    background: none; border: none; cursor: pointer;
+    width: 40px; height: 40px; color: var(--text);
+    transition: transform 0.5s ease;
+  }
+
+  .theme-toggle svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; }
+  .sun { display: block; }
+  .moon { display: none; }
+  [data-theme="dark"] .sun { display: none; }
+  [data-theme="dark"] .moon { display: block; }
+  [data-theme="dark"] .theme-toggle { transform: rotate(360deg); }
+
+  .badge { display: inline-block; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--primary); border: 1px solid var(--primary); padding: 6px 16px; border-radius: 4px; margin-bottom: 20px; font-weight: 700; }
+  h1 { font-size: 32px; font-weight: 800; line-height: 1; text-align: center; }
+  h1 span { color: var(--primary); }
+
+  .revenue-section { text-align: center; margin-bottom: 40px; }
+  .revenue-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .revenue-value { font-size: 42px; font-weight: 800; color: var(--primary); }
+
+  .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 15px; border-bottom: 1px solid var(--border); font-weight: 800; }
+
+  /* FIXED PERIOD STYLE: Sekarang mengikuti variabel tema secara eksplisit */
+  .date-row { 
+    display: flex; 
+    justify-content: center; 
+    gap: 8px; 
+    margin-bottom: 25px; 
+    padding: 10px;
+    background: var(--card-bg); /* Mengikuti mode terang/gelap */
+    border-radius: 8px;
+    transition: background 0.3s;
+  }
+
+  select {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    background-color: var(--card-bg); /* Paksa background mengikuti variabel */
+    color: var(--text); /* Paksa teks mengikuti variabel */
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s; /* Transisi halus saat ganti mode */
+  }
+
+  /* Memastikan list option juga mengikuti warna tema pada beberapa browser */
+  select option {
+    background-color: var(--card-bg);
+    color: var(--text);
+  }
+
+  select:focus { border-color: var(--primary); }
+
+  .deck-list { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; }
+  .deck-item { display: flex; justify-content: space-between; align-items: flex-end; padding: 10px 0; }
+  .deck-title { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .target-pill { font-size: 11px; font-weight: 800; color: var(--primary); background: var(--pill-bg); padding: 2px 8px; border-radius: 4px; display: none; }
+
+  .input-field { display: flex; align-items: baseline; gap: 6px; border-bottom: 2px solid var(--border); padding-bottom: 4px; transition: border-color 0.3s; }
+  .input-field:focus-within { border-color: var(--primary); }
+  input { font-family: inherit; border: none; background: none; font-size: 18px; font-weight: 800; width: 130px; text-align: right; color: var(--text); outline: none; }
+  
+  .unit { font-size: 14px; font-weight: 700; color: var(--muted); }
+  .auto-result { font-size: 18px; font-weight: 800; color: var(--primary); }
+
+  .export-btn {
+    width: 100%; background: var(--primary); color: white; border: none; padding: 16px;
+    font-family: 'Denton Variable', serif; font-weight: 800; font-size: 14px;
+    text-transform: uppercase; letter-spacing: 1px; border-radius: 8px; cursor: pointer;
+    margin-bottom: 50px;
+  }
+
+  .charts-grid { display: flex; flex-direction: column; gap: 50px; border-top: 1px solid var(--border); padding-top: 40px; padding-bottom: 60px; }
+  .chart-header { font-size: 12px; text-transform: uppercase; color: var(--text); text-align: center; font-weight: 800; margin-bottom: 25px; }
+  .chart-container { height: 200px; position: relative; }
+
+  @media (max-width: 768px) { h1 { font-size: 28px; } .revenue-value { font-size: 36px; } input { width: 100px; } }
+</style>
+</head>
+<body data-theme="light">
+
+<div class="container">
+  <header>
+    <button class="theme-toggle" id="themeToggle">
+      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div class="badge">CV. Roti Semua Generasi</div>
+    <h1><span>TAOBUN</span><br>DASHBOARD</h1>
+  </header>
+
+  <div class="revenue-section">
+    <p class="revenue-label">Projected Revenue</p>
+    <div class="revenue-value" id="totalRevenue">Rp 0</div>
+  </div>
+
+  <div class="deck-list">
+    <p class="section-label" style="text-align: center; border-bottom: none;">Report Period</p>
+    <div class="date-row">
+      <select id="repDay"></select>
+      <select id="repMonth">
+        <option value="01">Januari</option><option value="02" selected>Februari</option>
+        <option value="03">Maret</option><option value="04">April</option>
+        <option value="05">Mei</option><option value="06">Juni</option>
+        <option value="07">Juli</option><option value="08">Agustus</option>
+        <option value="09">September</option><option value="10">Oktober</option>
+        <option value="11">November</option><option value="12">Desember</option>
+      </select>
+      <select id="repYear"></select>
+    </div>
+
+    <p class="section-label">Market</p>
+    <div class="deck-item">
+      <div class="deck-info"><p class="deck-title">Leads <span id="targetLeads" class="target-pill"></span></p></div>
+      <div class="input-field"><input type="text" id="leads" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
+    </div>
+
+    <p class="section-label">Customer Breakdown</p>
+    <div class="deck-item">
+      <div class="deck-info"><p class="deck-title">Total Customers <span id="targetTotalCust" class="target-pill"></span></p></div>
+      <div class="input-field"><input type="text" id="totalCustInput" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
+    </div>
+    <div class="deck-item">
+      <div class="deck-info"><p class="deck-title">Retention Customers <span id="targetRetention" class="target-pill"></span></p></div>
+      <div class="input-field"><input type="text" id="retentionCust" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
+    </div>
+    <div class="deck-item" style="opacity: 0.7;">
+      <div class="deck-info"><p class="deck-title">New Customers <span id="targetNewCust" class="target-pill"></span></p></div>
+      <div class="auto-result" id="newCustDisplay">0</div>
+    </div>
+    <div class="deck-item" style="opacity: 0.7;">
+      <div class="deck-info"><p class="deck-title">Required Conversion <span id="targetConv" class="target-pill"></span></p></div>
+      <div class="auto-result" id="convRateDisplay">0%</div>
+    </div>
+
+    <p class="section-label">Value</p>
+    <div class="deck-item">
+      <div class="deck-info"><p class="deck-title">Basket Size <span id="targetBasket" class="target-pill"></span></p></div>
+      <div class="input-field"><span class="unit">Rp</span><input type="text" id="basketSize" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
+    </div>
+    <div class="deck-item">
+      <div class="deck-info"><p class="deck-title">Avg Transaction <span id="targetTx" class="target-pill"></span></p></div>
+      <div class="input-field"><input type="text" id="avgTx" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">x</span></div>
+    </div>
+
+    <div class="deck-item" style="border-top: 1px dashed var(--border); padding-top: 20px;">
+      <div class="deck-info"><p class="deck-title">Optimization Target</p></div>
+      <div class="input-field"><input type="text" id="optPercent" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"><span class="unit" style="color: var(--primary);">%</span></div>
+    </div>
+  </div>
+
+  <button class="export-btn" onclick="exportToExcel()">Export Report to Excel</button>
+
+  <div class="charts-grid">
+    <div class="chart-box"><p class="chart-header">Conversion Funnel (%)</p><div class="chart-container"><canvas id="funnelChart"></canvas></div></div>
+    <div class="chart-box"><p class="chart-header" id="growthHeader">Revenue Growth Strategy (%)</p><div class="chart-container"><canvas id="growthChart"></canvas></div></div>
+  </div>
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+let funnelChart, growthChart;
+
+function populateDates() {
+  const daySel = document.getElementById('repDay');
+  const yearSel = document.getElementById('repYear');
+  for(let i=1; i<=31; i++) {
+    let opt = document.createElement('option');
+    opt.value = i < 10 ? '0'+i : i;
+    opt.textContent = i;
+    if(i === 18) opt.selected = true;
+    daySel.appendChild(opt);
+  }
+  const currentYear = new Date().getFullYear();
+  for(let i=currentYear-2; i<=currentYear+5; i++) {
+    let opt = document.createElement('option');
+    opt.value = i; opt.textContent = i;
+    if(i === currentYear) opt.selected = true;
+    yearSel.appendChild(opt);
+  }
+}
+
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  document.body.setAttribute('data-theme', newTheme);
+  updateChartsTheme(newTheme);
+});
+
+function updateChartsTheme(theme) {
+  const color = theme === 'dark' ? '#e8e8f0' : '#1a1a1a';
+  [funnelChart, growthChart].forEach(chart => {
+    if(chart) {
+      chart.options.plugins.datalabels.color = color;
+      if(chart.options.scales.y) chart.options.scales.y.ticks.color = color;
+      if(chart.options.scales.x) chart.options.scales.x.ticks.color = color;
+      chart.update();
+    }
+  });
+}
+
+function initCharts() {
+  const color = document.body.getAttribute('data-theme') === 'dark' ? '#e8e8f0' : '#1a1a1a';
+  const font = { family: 'Denton Variable', size: 11, weight: '700' };
+
+  funnelChart = new Chart(document.getElementById('funnelChart'), {
+    type: 'bar',
+    data: { labels: ['Leads', 'Total Cust', 'Transactions'], datasets: [{ data: [0,0,0], backgroundColor: [document.body.getAttribute('data-theme') === 'dark' ? '#1a1a26' : '#f4f4f4', '#d61e30', '#1a1a1a'], borderRadius: 4, barThickness: 25 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { anchor: 'end', align: 'right', color: color, font: {weight:'800', size:10}, formatter: (v, ctx) => { const d = ctx.chart.data.datasets[0].data; return d[0] === 0 ? '0%' : ((v/d[0])*100).toFixed(1)+'%'; } } }, scales: { x: {display: false}, y: {ticks: {font, color}, grid: {display: false}} } }
+  });
+
+  growthChart = new Chart(document.getElementById('growthChart'), {
+    type: 'bar',
+    data: { labels: ['Current', 'Optimized'], datasets: [{ data: [0,0], backgroundColor: ['#1a1a1a', '#d61e30'], borderRadius: 6, barThickness: 50 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { anchor: 'end', align: 'top', color: color, font: {weight:'800', size:10}, formatter: (v, ctx) => { const d = ctx.chart.data.datasets[0].data; if(ctx.dataIndex===0 || d[0]===0) return 'BASE'; return '+'+(((v/d[0])-1)*100).toFixed(1)+'%'; } } }, scales: { y: {display: false}, x: {ticks: {font, color}, grid: {display: false}} } }
+  });
+}
+
+function formatNumber(val) {
+  let clean = val.toString().replace(/[^0-9,]/g, "");
+  let parts = clean.split(",");
+  let int = parts[0];
+  if (int.length > 1) int = int.replace(/^0+/, "");
+  if (int === "") int = "0";
+  return int.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (parts.length > 1 ? "," + parts[1] : "");
+}
+
+function cleanNumber(val) { return parseFloat(val.toString().replace(/\./g, "").replace(",", ".")) || 0; }
+
+function handleInput(el) {
+  let cursor = el.selectionStart;
+  let oldLen = el.value.length;
+  el.value = formatNumber(el.value);
+  el.setSelectionRange(cursor + (el.value.length - oldLen), cursor + (el.value.length - oldLen));
+  calculate();
+}
+
+function fmtCurrency(n) {
+  if (n === 0) return 'Rp 0';
+  if (n >= 1e9) return 'Rp ' + (n/1e9).toFixed(2).replace('.', ',') + ' M';
+  if (n >= 1e6) return 'Rp ' + (n/1e6).toFixed(1).replace('.', ',') + ' Jt';
+  return 'Rp ' + n.toLocaleString('id-ID', { maximumFractionDigits: 0 });
+}
+
+function updateTargetPill(id, value, isVisible, prefix = "", suffix = "") {
+  const el = document.getElementById(id);
+  if (isVisible && value > 0) {
+    el.textContent = `→ ${prefix}${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}${suffix}`;
+    el.style.display = "inline-block";
+  } else el.style.display = "none";
+}
+
+function calculate() {
+  const leads = cleanNumber(document.getElementById('leads').value);
+  const totalCust = cleanNumber(document.getElementById('totalCustInput').value);
+  const retention = cleanNumber(document.getElementById('retentionCust').value);
+  const basket = cleanNumber(document.getElementById('basketSize').value);
+  const avgTx = cleanNumber(document.getElementById('avgTx').value);
+  const opt = cleanNumber(document.getElementById('optPercent').value);
+
+  const factor = 1 + (opt/100);
+  const newCust = Math.max(0, totalCust - retention);
+  const currentRev = totalCust * avgTx * basket;
+  const optRev = (totalCust * factor) * (avgTx * factor) * (basket * factor);
+
+  document.getElementById('totalRevenue').textContent = fmtCurrency(currentRev);
+  document.getElementById('newCustDisplay').textContent = Math.round(newCust).toLocaleString('id-ID');
+  document.getElementById('convRateDisplay').textContent = (leads > 0 ? (newCust/leads)*100 : 0).toFixed(1) + '%';
+  document.getElementById('growthHeader').textContent = opt > 0 ? `Revenue Growth (+${opt}%)` : "Revenue Growth Strategy";
+
+  const show = opt > 0;
+  updateTargetPill('targetLeads', leads * factor, show);
+  updateTargetPill('targetTotalCust', totalCust * factor, show);
+  updateTargetPill('targetRetention', retention * factor, show);
+  updateTargetPill('targetNewCust', Math.max(0, (totalCust * factor) - (retention * factor)), show);
+  updateTargetPill('targetConv', (leads * factor > 0 ? ((totalCust*factor - retention*factor)/(leads*factor))*100 : 0), show, "", "%");
+  updateTargetPill('targetBasket', basket * factor, show, "Rp ");
+  updateTargetPill('targetTx', avgTx * factor, show, "", "x");
+
+  if(funnelChart) { funnelChart.data.datasets[0].data = [leads, totalCust, totalCust * avgTx]; funnelChart.update('none'); }
+  if(growthChart) { growthChart.data.datasets[0].data = [currentRev, opt > 0 ? optRev : 0]; growthChart.update('none'); }
+}
+
+function exportToExcel() {
+  const d = document.getElementById('repDay').value;
+  const m = document.getElementById('repMonth').value;
+  const y = document.getElementById('repYear').value;
+  const reportDate = `${d}/${m}/${y}`;
+  const leads = cleanNumber(document.getElementById('leads').value);
+  const totalCust = cleanNumber(document.getElementById('totalCustInput').value);
+  const retention = cleanNumber(document.getElementById('retentionCust').value);
+  const basket = cleanNumber(document.getElementById('basketSize').value);
+  const tx = cleanNumber(document.getElementById('avgTx').value);
+  const opt = cleanNumber(document.getElementById('optPercent').value);
+  const factor = 1 + (opt / 100);
+
+  const data = [
+    ["TAOBUN STRATEGY REPORT", "", "", ""],
+    ["Periode Laporan:", reportDate, "", ""],
+    ["Dicetak pada:", new Date().toLocaleString("id-ID"), "", ""],
+    ["", "", "", ""],
+    ["METRIK BISNIS", "SAAT INI", "OPTIMASI ("+opt+"%)", "KENAIKAN"],
+    ["Leads", leads, leads * factor, leads * (factor - 1)],
+    ["Total Customers", totalCust, totalCust * factor, totalCust * (factor - 1)],
+    ["- Retention", retention, retention * factor, ""],
+    ["- New Customers", Math.max(0, totalCust - retention), Math.max(0, (totalCust*factor)-(retention*factor)), ""],
+    ["Basket Size", fmtCurrency(basket), fmtCurrency(basket * factor), ""],
+    ["Avg. Transaction", tx + " x", (tx * factor).toFixed(1) + " x", ""],
+    ["", "", "", ""],
+    ["TOTAL REVENUE", fmtCurrency(totalCust*tx*basket), fmtCurrency((totalCust*factor)*(tx*factor)*(basket*factor)), "+"+((((totalCust*factor)*(tx*factor)*(basket*factor))/(totalCust*tx*basket)-1)*100 || 0).toFixed(1)+"%"],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch: 30}, {wch: 20}, {wch: 25}, {wch: 15}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Report");
+  XLSX.writeFile(wb, `Taobun_Report_${d}-${m}-${y}.xlsx`);
+}
+
+window.onload = () => { populateDates(); initCharts(); calculate(); };
+</script>
+</body>
+</html>
