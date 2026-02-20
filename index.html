@@ -229,16 +229,16 @@
         <p class="section-label">Market</p>
         <div class="deck-item">
           <div class="deck-info"><p class="deck-title">Leads <span id="targetLeads" class="target-pill"></span></p></div>
-          <div class="input-field"><input type="text" id="leads" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
+          <div class="input-field"><input type="text" id="leads" class="nav-input" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
         </div>
         <div class="deck-item">
           <div class="deck-info"><p class="deck-title">Conv. Target <span id="targetConvRate" class="target-pill"></span></p></div>
-          <div class="input-field"><input type="text" id="convTargetInput" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">%</span></div>
+          <div class="input-field"><input type="text" id="convTargetInput" class="nav-input" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">%</span></div>
         </div>
         
         <div class="deck-item" style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 15px;">
           <div class="deck-info"><p class="deck-title" style="color: var(--primary);">Total Customers</p></div>
-          <div class="input-field"><input type="text" id="totalCustInput" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"></div>
+          <div class="input-field"><input type="text" id="totalCustInput" class="nav-input" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"></div>
         </div>
         
         <div class="deck-item" style="padding-top: 6px; border-bottom: none;">
@@ -253,7 +253,7 @@
         <div class="deck-item" style="padding-top: 4px; padding-bottom: 8px;">
           <div class="deck-info"><p class="deck-title" style="font-size: 13px; margin-left: 10px; font-weight: 600; color: var(--muted);">↳ Retained</p></div>
           <div class="input-field" style="border-bottom: 1px solid var(--border); padding-bottom: 2px;">
-            <input type="text" id="retentionCust" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="font-size: 15px; width: 80px;">
+            <input type="text" id="retentionCust" class="nav-input" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="font-size: 15px; width: 80px;">
           </div>
         </div>
       </div>
@@ -262,11 +262,11 @@
         <p class="section-label">Value</p>
         <div class="deck-item">
           <div class="deck-info"><p class="deck-title">Basket Size <span id="targetBasket" class="target-pill"></span></p></div>
-          <div class="input-field"><span class="unit">Rp</span><input type="text" id="basketSize" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
+          <div class="input-field"><span class="unit">Rp</span><input type="text" id="basketSize" class="nav-input" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
         </div>
         <div class="deck-item">
           <div class="deck-info"><p class="deck-title">Avg Tx <span id="targetTx" class="target-pill"></span></p></div>
-          <div class="input-field"><input type="text" id="avgTx" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">x</span></div>
+          <div class="input-field"><input type="text" id="avgTx" class="nav-input" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">x</span></div>
         </div>
       </div>
 
@@ -274,7 +274,7 @@
         <p class="section-label">Simulation</p>
         <div class="deck-item">
           <div class="deck-info"><p class="deck-title">Growth Target</p></div>
-          <div class="input-field"><input type="text" id="optPercent" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"><span class="unit" style="color: var(--primary);">%</span></div>
+          <div class="input-field"><input type="text" id="optPercent" class="nav-input" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"><span class="unit" style="color: var(--primary);">%</span></div>
         </div>
         <div class="deck-item" style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 15px;">
           <div class="deck-info"><p class="deck-title" style="color: var(--primary);">Projected Revenue</p></div>
@@ -468,7 +468,88 @@ function calculate() {
   if(growthChart) { growthChart.data.datasets[0].data = [currentRev, optRev]; growthChart.update(); }
 }
 
-window.onload = () => { populateDates(); initCharts(); calculate(); };
+function exportToExcel() {
+  const month = document.getElementById('repMonth').options[document.getElementById('repMonth').selectedIndex].text;
+  const year = document.getElementById('repYear').value;
+  
+  const leads = cleanNumber(document.getElementById('leads').value);
+  const totalCust = cleanNumber(document.getElementById('totalCustInput').value);
+  const basket = cleanNumber(document.getElementById('basketSize').value);
+  const avgTx = cleanNumber(document.getElementById('avgTx').value);
+  const opt = cleanNumber(document.getElementById('optPercent').value);
+  const factor = 1 + (opt/100);
+
+  const targetLeads = Math.round(leads * factor);
+  const actualConv = leads > 0 ? (totalCust / leads) * 100 : 0;
+  const targetConv = (actualConv > 0 ? actualConv : cleanNumber(document.getElementById('convTargetInput').value)) * factor;
+  const targetBasket = Math.round(basket * factor);
+  const targetTx = (avgTx * factor).toFixed(1);
+
+  const reportData = [
+    ["LAPORAN STRATEGI REVENUE TAOBUN", ""],
+    ["Periode:", month + " " + year],
+    ["Status Dashboard:", "Aktif"],
+    ["", ""],
+    ["SUMMARY PERFORMANCE", "VALUE"],
+    ["Total Revenue Saat Ini", document.getElementById('totalRevenue').textContent],
+    ["Projected Revenue Target", document.getElementById('projectedRevenueDisplay').textContent],
+    ["Growth Ambition", opt + "%"],
+    ["", ""],
+    ["METRIK DETAIL (SAAT INI)", "VALUE"],
+    ["Leads", leads],
+    ["Total Customers", totalCust],
+    ["Conversion Rate", actualConv.toFixed(1) + "%"],
+    ["Basket Size", fmtCurrency(basket)],
+    ["Avg. Transactions", avgTx + "x"],
+    ["", ""],
+    ["GROWTH EXPECTATION (TARGET)", "VALUE"],
+    ["Target Leads Baru", targetLeads],
+    ["Target Conversion Rate", targetConv.toFixed(1) + "%"],
+    ["Target Basket Size", fmtCurrency(targetBasket)],
+    ["Target Transaksi", targetTx + "x"],
+    ["", ""],
+    ["Action Plan:", "Optimasi Leads, Conversion, dan Value sebesar " + opt + "% masing-masing."]
+  ];
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(reportData);
+  ws['!cols'] = [{ wch: 30 }, { wch: 25 }];
+  XLSX.utils.book_append_sheet(wb, ws, "Growth Report");
+  XLSX.writeFile(wb, `TAOBUN_Growth_Strategy_${month}_${year}.xlsx`);
+}
+
+// FUNGSI NAVIGASI KEYBOARD
+function initNavigation() {
+  const inputs = Array.from(document.querySelectorAll('.nav-input'));
+  
+  inputs.forEach((input, index) => {
+    input.addEventListener('keydown', (e) => {
+      // 1. Tombol Enter atau Panah Bawah -> Pindah ke bawah
+      if (e.key === 'Enter' || e.key === 'ArrowDown') {
+        e.preventDefault(); // Mencegah form submit jika ada
+        const next = inputs[index + 1];
+        if (next) next.focus();
+      }
+      
+      // 2. Tombol Panah Atas -> Pindah ke atas
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = inputs[index - 1];
+        if (prev) prev.focus();
+      }
+      
+      // Catatan: Panah Kiri dan Kanan dibiarkan default browser
+      // Agar kursor bisa pindah antar digit seperti permintaan Anda.
+    });
+  });
+}
+
+window.onload = () => { 
+  populateDates(); 
+  initCharts(); 
+  calculate(); 
+  initNavigation(); // Aktifkan navigasi saat load
+};
 </script>
 </body>
 </html>
