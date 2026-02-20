@@ -31,6 +31,8 @@
     --muted: #777777;
     --card-bg: #f9f9f9;
     --pill-bg: #fff0f1;
+    --success: #10b981;
+    --danger: #ef4444;
     --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -54,12 +56,10 @@
 
   .container { max-width: 550px; margin: 0 auto; }
   
-  /* Navigation & Views */
   .view-container { 
     display: none; 
     opacity: 0;
     transform: scale(0.98) translateY(10px);
-    transition: var(--transition-smooth);
   }
   
   .view-active { 
@@ -84,24 +84,18 @@
     position: absolute; right: 0; top: 0;
     background: none; border: none; cursor: pointer;
     width: 40px; height: 40px; color: var(--text);
-    transition: transform 0.3s ease, color 0.3s ease;
   }
 
-  .theme-toggle:hover {
-    transform: rotate(15deg) scale(1.1);
-  }
-
-  .theme-toggle svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .theme-toggle svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; }
   .sun { display: block; }
   .moon { display: none; }
   [data-theme="dark"] .sun { display: none; }
   [data-theme="dark"] .moon { display: block; }
 
-  .badge { display: inline-block; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--primary); border: 1px solid var(--primary); padding: 6px 16px; border-radius: 4px; margin-bottom: 20px; font-weight: 700; transition: var(--transition-smooth); }
+  .badge { display: inline-block; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--primary); border: 1px solid var(--primary); padding: 6px 16px; border-radius: 4px; margin-bottom: 20px; font-weight: 700; }
   h1 { font-size: 32px; font-weight: 800; line-height: 1.1; text-align: center; }
   h1 span { color: var(--primary); }
 
-  /* Home Menu Style */
   .menu-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 30px; }
   .menu-card { 
     background: var(--card-bg); 
@@ -114,87 +108,63 @@
     align-items: center;
     gap: 20px;
   }
-  .menu-card:hover { 
-    border-color: var(--primary); 
-    transform: translateY(-4px); 
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
-  }
-  [data-theme="dark"] .menu-card:hover { box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4); }
-  
-  .menu-card.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); transform: none; box-shadow: none; hover: border-color: var(--border); }
-  .menu-card.disabled:hover { border-color: var(--border); }
-  
-  .menu-icon { 
-    color: var(--primary);
-    background: var(--pill-bg); 
-    padding: 12px; 
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition-smooth);
-  }
-  .menu-icon svg { width: 24px; height: 24px; stroke-width: 1.5; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  
-  .menu-card:hover .menu-icon { transform: scale(1.05); }
-
+  .menu-card:hover { border-color: var(--primary); transform: translateY(-4px); }
+  .menu-card.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+  .menu-icon { color: var(--primary); background: var(--pill-bg); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .menu-icon svg { width: 24px; height: 24px; stroke-width: 1.5; stroke: currentColor; fill: none; }
   .menu-info h3 { font-size: 18px; font-weight: 800; margin: 0; }
 
   .back-btn {
     background: none; border: none; color: var(--muted); font-family: inherit;
     font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 20px;
     display: flex; align-items: center; gap: 6px;
-    transition: color 0.3s ease, transform 0.3s ease;
   }
-  .back-btn:hover { color: var(--text); transform: translateX(-3px); }
 
-  /* Dashboard Styles */
   .revenue-section { text-align: center; margin-bottom: 40px; }
-  .revenue-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; transition: color 0.3s ease; }
-  .revenue-value { font-size: 42px; font-weight: 800; color: var(--primary); transition: transform 0.3s ease; }
+  .revenue-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .revenue-value { font-size: 42px; font-weight: 800; color: var(--primary); }
   
   .section-group { background: var(--card-bg); border-radius: 16px; padding: 24px; margin-bottom: 30px; border: 1px solid var(--border); transition: var(--transition-smooth); }
-  .section-group:hover { border-color: rgba(214, 30, 48, 0.3); }
-  
-  .section-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text); margin-bottom: 20px; border-bottom: 3px solid var(--primary); font-weight: 900; padding-bottom: 6px; display: inline-block; transition: color 0.3s ease; }
+  .section-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text); margin-bottom: 20px; border-bottom: 3px solid var(--primary); font-weight: 900; padding-bottom: 6px; display: inline-block; }
   .date-row { display: flex; justify-content: center; gap: 12px; margin-bottom: 35px; padding: 10px; }
   
-  select { 
-    font-family: inherit; font-size: 13px; font-weight: 700; 
-    background-color: var(--card-bg); color: var(--text); 
-    border: 1px solid var(--border); border-radius: 6px; 
-    padding: 8px 14px; outline: none; cursor: pointer;
-    transition: var(--transition-smooth);
-  }
-  select:hover, select:focus { border-color: var(--primary); }
+  select { font-family: inherit; font-size: 13px; font-weight: 700; background-color: var(--card-bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 14px; outline: none; cursor: pointer; }
   
-  .deck-item { display: flex; justify-content: space-between; align-items: flex-end; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.03); transition: border-color 0.3s ease; }
+  .deck-item { display: flex; justify-content: space-between; align-items: flex-end; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.03); }
   [data-theme="dark"] .deck-item { border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .deck-title { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; color: var(--text); }
   
-  .deck-title { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; color: var(--text); transition: color 0.3s ease;}
-  .target-pill { font-size: 10px; font-weight: 800; color: var(--primary); background: var(--pill-bg); padding: 2px 6px; border-radius: 4px; display: none; }
+  @keyframes bounceIn {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+
+  .target-pill { 
+    font-size: 10px; font-weight: 800; color: var(--primary); 
+    background: var(--pill-bg); padding: 3px 6px; border-radius: 6px; 
+    display: none; transition: opacity 0.3s ease;
+  }
+
+  .status-pill {
+    font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; 
+    color: white; display: none; margin-left: 6px; letter-spacing: 0.5px;
+    transition: background-color 0.4s ease, opacity 0.4s ease;
+  }
+
+  .animate-bounce { animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   
   .input-field { display: flex; align-items: baseline; gap: 6px; border-bottom: 2px solid var(--border); padding-bottom: 4px; transition: border-color 0.3s ease; }
   .input-field:focus-within { border-bottom-color: var(--primary); }
   
-  input { font-family: inherit; border: none; background: none; font-size: 18px; font-weight: 800; width: 110px; text-align: right; color: var(--text); outline: none; transition: color 0.3s ease; }
-  .unit { font-size: 12px; font-weight: 700; color: var(--muted); transition: color 0.3s ease; }
+  input { font-family: inherit; border: none; background: none; font-size: 18px; font-weight: 800; width: 110px; text-align: right; color: var(--text); outline: none; }
+  .unit { font-size: 12px; font-weight: 700; color: var(--muted); }
   .auto-result { font-size: 18px; font-weight: 800; color: var(--primary); }
   
-  .export-btn { 
-    width: 100%; background: var(--primary); color: white; border: none; 
-    padding: 18px; font-family: 'Denton Variable', serif; font-weight: 800; 
-    font-size: 14px; text-transform: uppercase; letter-spacing: 1px; 
-    border-radius: 12px; cursor: pointer; margin-top: 10px; margin-bottom: 50px;
-    transition: var(--transition-smooth);
-    position: relative;
-    overflow: hidden;
-  }
-  .export-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(214, 30, 48, 0.25); }
-  .export-btn:active { transform: translateY(0); }
-
-  .charts-grid { display: flex; flex-direction: column; gap: 50px; border-top: 1px solid var(--border); padding-top: 40px; padding-bottom: 60px; transition: border-color 0.3s ease;}
-  .chart-header { font-size: 12px; text-transform: uppercase; color: var(--text); text-align: center; font-weight: 800; margin-bottom: 25px; transition: color 0.3s ease;}
+  .export-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; font-family: 'Denton Variable', serif; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border-radius: 12px; cursor: pointer; margin-top: 10px; margin-bottom: 50px; transition: var(--transition-smooth); }
+  .charts-grid { display: flex; flex-direction: column; gap: 50px; border-top: 1px solid var(--border); padding-top: 40px; padding-bottom: 60px; }
+  .chart-header { font-size: 12px; text-transform: uppercase; color: var(--text); text-align: center; font-weight: 800; margin-bottom: 25px; }
   .chart-container { height: 250px; position: relative; }
 
   @media (max-width: 768px) { h1 { font-size: 28px; } .revenue-value { font-size: 36px; } }
@@ -216,37 +186,24 @@
 
     <div class="menu-grid">
       <div class="menu-card" onclick="showView('revenue-view')">
-        <div class="menu-icon">
-          <svg viewBox="0 0 24 24">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-          </svg>
-        </div>
-        <div class="menu-info">
-          <h3>Revenue Dashboard</h3>
-        </div>
+        <div class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+        <div class="menu-info"><h3>Revenue Dashboard</h3></div>
       </div>
-
       <div class="menu-card disabled">
-        <div class="menu-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-          </svg>
-        </div>
-        <div class="menu-info">
-          <h3>Coming Soon!</h3>
-        </div>
+        <div class="menu-icon"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
+        <div class="menu-info"><h3>Coming Soon!</h3></div>
       </div>
     </div>
   </div>
 
   <div id="revenue-view" class="view-container">
-    <button class="back-btn" onclick="showView('home-view')">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-      Back to Menu
-    </button>
+    <button class="back-btn" onclick="showView('home-view')">← Back to Menu</button>
     <header>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">
+        <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+      
       <h1><span>TAOBUN</span><br>REVENUE</h1>
     </header>
 
@@ -255,7 +212,6 @@
       <div class="revenue-value" id="totalRevenue">Rp 0</div>
     </div>
 
-    <p class="section-label" style="text-align: center; border-bottom: none; width: 100%; margin-top: 0;">Report Period</p>
     <div class="date-row">
       <select id="repMonth" onchange="calculate()">
         <option value="01">Januari</option><option value="02" selected>Februari</option>
@@ -279,9 +235,26 @@
           <div class="deck-info"><p class="deck-title">Conv. Target <span id="targetConvRate" class="target-pill"></span></p></div>
           <div class="input-field"><input type="text" id="convTargetInput" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">%</span></div>
         </div>
-        <div class="deck-item" style="opacity: 0.8;">
-          <div class="deck-info"><p class="deck-title">Lead Conv. Rate <span id="leadStatusPill" class="target-pill"></span></p></div>
-          <div class="auto-result" id="leadConvDisplay">0%</div>
+        
+        <div class="deck-item" style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 15px;">
+          <div class="deck-info"><p class="deck-title" style="color: var(--primary);">Total Customers</p></div>
+          <div class="input-field"><input type="text" id="totalCustInput" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"></div>
+        </div>
+        
+        <div class="deck-item" style="padding-top: 6px; border-bottom: none;">
+          <div class="deck-info"><p class="deck-title" style="font-size: 13px; margin-left: 10px; font-weight: 600; color: var(--muted);">↳ Actual Conv. Rate <span id="statusPill" class="status-pill"></span></p></div>
+          <div class="auto-result" id="actualConvDisplay" style="font-size: 15px; color: var(--text);">0%</div>
+        </div>
+
+        <div class="deck-item" style="padding-top: 2px; border-bottom: none;">
+          <div class="deck-info"><p class="deck-title" style="font-size: 13px; margin-left: 10px; font-weight: 600; color: var(--muted);">↳ New Customers</p></div>
+          <div class="auto-result" id="newCustDisplay" style="font-size: 15px; color: var(--text);">0</div>
+        </div>
+        <div class="deck-item" style="padding-top: 4px; padding-bottom: 8px;">
+          <div class="deck-info"><p class="deck-title" style="font-size: 13px; margin-left: 10px; font-weight: 600; color: var(--muted);">↳ Retained</p></div>
+          <div class="input-field" style="border-bottom: 1px solid var(--border); padding-bottom: 2px;">
+            <input type="text" id="retentionCust" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="font-size: 15px; width: 80px;">
+          </div>
         </div>
       </div>
 
@@ -295,8 +268,6 @@
           <div class="deck-info"><p class="deck-title">Avg Tx <span id="targetTx" class="target-pill"></span></p></div>
           <div class="input-field"><input type="text" id="avgTx" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">x</span></div>
         </div>
-        <input type="hidden" id="totalCustInput" value="100"> 
-        <input type="hidden" id="retentionCust" value="0">
       </div>
 
       <div class="section-group">
@@ -315,31 +286,21 @@
     <button class="export-btn" onclick="exportToExcel()">Export Report to Excel</button>
 
     <div class="charts-grid">
-      <div class="chart-box"><p class="chart-header">Conversion Funnel (%)</p><div class="chart-container"><canvas id="funnelChart"></canvas></div></div>
-      <div class="chart-box"><p class="chart-header">Revenue Growth Strategy (%)</p><div class="chart-container"><canvas id="growthChart"></canvas></div></div>
+      <div class="chart-box"><p class="chart-header">Conversion Funnel</p><div class="chart-container"><canvas id="funnelChart"></canvas></div></div>
+      <div class="chart-box"><p class="chart-header">Revenue Growth Strategy</p><div class="chart-container"><canvas id="growthChart"></canvas></div></div>
     </div>
   </div>
-
 </div>
 
 <script>
 Chart.register(ChartDataLabels);
 let funnelChart, growthChart;
 
-// NAVIGATION LOGIC
 function showView(viewId) {
-  document.querySelectorAll('.view-container').forEach(v => {
-    v.classList.remove('view-active');
-  });
-  
-  const targetView = document.getElementById(viewId);
-  targetView.classList.add('view-active');
-  
+  document.querySelectorAll('.view-container').forEach(v => v.classList.remove('view-active'));
+  document.getElementById(viewId).classList.add('view-active');
   if(viewId === 'revenue-view') {
-    setTimeout(() => {
-      if(funnelChart) funnelChart.update();
-      if(growthChart) growthChart.update();
-    }, 150);
+    setTimeout(() => { if(funnelChart) funnelChart.update(); if(growthChart) growthChart.update(); }, 150);
   }
 }
 
@@ -372,20 +333,54 @@ function updateChartsTheme(theme) {
   });
 }
 
+function formatShortNumber(num) {
+  if (num >= 1000000000) return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'Jt';
+  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'Rb';
+  return formatNumber(Math.round(num));
+}
+
 function initCharts() {
   const color = document.body.getAttribute('data-theme') === 'dark' ? '#e8e8f0' : '#1a1a1a';
   const font = { family: 'Denton Variable', size: 10, weight: '800' };
 
   funnelChart = new Chart(document.getElementById('funnelChart'), {
     type: 'bar',
-    data: { labels: ['Leads', 'Customers', 'Transactions'], datasets: [{ data: [0,0,0], backgroundColor: ['#f4f4f4', '#d61e30', '#1a1a1a'], borderRadius: 4, barThickness: 25 }] },
-    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { color, font } }, scales: { x: {display: false}, y: {ticks: {color, font: {family: 'Denton Variable'}}, grid: {display: false}} }, animation: { duration: 800, easing: 'easeOutQuart' } }
+    data: { labels: ['Leads', 'Customers', 'Transactions'], datasets: [{ data: [0,0,0], backgroundColor: ['#e2e2e2', '#d61e30', '#1a1a1a'], borderRadius: 4, barThickness: 25 }] },
+    options: { 
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
+      layout: { padding: { right: 50 } }, 
+      plugins: { legend: {display: false}, datalabels: { color: color, font, anchor: 'end', align: 'end', formatter: (value) => value > 0 ? formatNumber(Math.round(value)) : '' } }, 
+      scales: { x: {display: false}, y: {ticks: {color, font: {family: 'Denton Variable'}}, grid: {display: false}, border: {display: false}} }
+    }
   });
 
   growthChart = new Chart(document.getElementById('growthChart'), {
     type: 'bar',
     data: { labels: ['Current', 'Target'], datasets: [{ data: [0,0], backgroundColor: ['#1a1a1a', '#d61e30'], borderRadius: 6, barThickness: 50 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { color, font } }, scales: { y: {display: false}, x: {ticks: {color, font: {family: 'Denton Variable'}}, grid: {display: false}} }, animation: { duration: 800, easing: 'easeOutQuart' } }
+    options: { 
+      responsive: true, maintainAspectRatio: false, layout: { padding: { top: 40 } }, 
+      plugins: { 
+        legend: {display: false}, 
+        datalabels: { 
+          color: color, font: { family: 'Denton Variable', size: 11, weight: '800' },
+          textAlign: 'center', anchor: 'end', align: 'end', 
+          formatter: (value, context) => {
+            if (value === 0) return '';
+            let valStr = formatShortNumber(value);
+            if (context.dataIndex === 1) { 
+              const current = context.chart.data.datasets[0].data[0];
+              if (current > 0) {
+                const pct = (((value - current) / current) * 100).toFixed(1).replace(/\.0$/, '');
+                return [`+${pct}%`, `Rp ${valStr}`];
+              }
+            }
+            return `Rp ${valStr}`;
+          }
+        } 
+      }, 
+      scales: { y: {display: false}, x: {ticks: {color, font: {family: 'Denton Variable'}}, grid: {display: false}, border: {display: false}} }
+    }
   });
 }
 
@@ -410,20 +405,64 @@ function fmtCurrency(n) {
   return 'Rp ' + n.toLocaleString('id-ID', { maximumFractionDigits: 0 });
 }
 
+function updateSmartElement(el, isVisible, content, isSuccess = null) {
+  const wasVisible = el.style.display === 'inline-block';
+  
+  if (isVisible) {
+    el.textContent = content;
+    if (!wasVisible) {
+      el.style.display = 'inline-block';
+      el.classList.add('animate-bounce');
+      setTimeout(() => el.classList.remove('animate-bounce'), 600);
+    }
+    if (isSuccess !== null) {
+      el.style.backgroundColor = isSuccess ? 'var(--success)' : 'var(--danger)';
+    }
+  } else {
+    el.style.display = 'none';
+  }
+}
+
 function calculate() {
   const leads = cleanNumber(document.getElementById('leads').value);
   const convTarget = cleanNumber(document.getElementById('convTargetInput').value);
+  const totalCust = cleanNumber(document.getElementById('totalCustInput').value);
+  const retainedCust = cleanNumber(document.getElementById('retentionCust').value);
   const basket = cleanNumber(document.getElementById('basketSize').value);
   const avgTx = cleanNumber(document.getElementById('avgTx').value);
   const opt = cleanNumber(document.getElementById('optPercent').value);
+  
+  let actualConv = leads > 0 ? (totalCust / leads) * 100 : 0;
+  document.getElementById('actualConvDisplay').textContent = actualConv.toFixed(1) + '%';
 
-  const factor = 1 + (opt/100);
-  const totalCust = leads * (convTarget/100) || 0;
+  const statusPill = document.getElementById('statusPill');
+  const isVisible = (totalCust > 0 && leads > 0);
+  const isTercapai = actualConv >= convTarget;
+  updateSmartElement(statusPill, isVisible, isTercapai ? '✓ Tercapai' : '✗ Belum', isTercapai);
+
+  let newCust = Math.max(0, totalCust - retainedCust);
+  document.getElementById('newCustDisplay').textContent = formatNumber(Math.round(newCust));
+  
   const currentRev = totalCust * avgTx * basket;
+  const factor = 1 + (opt/100);
   const optRev = currentRev * Math.pow(factor, 3);
-
   document.getElementById('totalRevenue').textContent = fmtCurrency(currentRev);
   document.getElementById('projectedRevenueDisplay').textContent = fmtCurrency(optRev);
+
+  const tLeads = document.getElementById('targetLeads');
+  const tConv = document.getElementById('targetConvRate');
+  const tBasket = document.getElementById('targetBasket');
+  const tTx = document.getElementById('targetTx');
+
+  if (opt > 0) {
+    updateSmartElement(tLeads, true, '↗ ' + formatNumber(Math.round(leads * factor)));
+    let baseConv = actualConv > 0 ? actualConv : convTarget;
+    updateSmartElement(tConv, true, '↗ ' + (baseConv * factor).toFixed(1) + '%');
+    updateSmartElement(tBasket, true, '↗ Rp ' + formatNumber(Math.round(basket * factor)));
+    updateSmartElement(tTx, true, '↗ ' + (avgTx * factor).toFixed(1) + 'x');
+  } else {
+    [tLeads, tConv, tBasket, tTx].forEach(el => el.style.display = 'none');
+  }
 
   if(funnelChart) { funnelChart.data.datasets[0].data = [leads, totalCust, totalCust * avgTx]; funnelChart.update(); }
   if(growthChart) { growthChart.data.datasets[0].data = [currentRev, optRev]; growthChart.update(); }
