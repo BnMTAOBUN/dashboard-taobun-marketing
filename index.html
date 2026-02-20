@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>TAOBUN Revenue Dashboard</title>
+<title>TAOBUN Management Suite</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,6 +31,7 @@
     --muted: #777777;
     --card-bg: #f9f9f9;
     --pill-bg: #fff0f1;
+    --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   [data-theme="dark"] {
@@ -47,12 +48,30 @@
     background: var(--bg);
     color: var(--text);
     padding: 40px 20px;
-    transition: background 0.3s, color 0.3s;
+    transition: background 0.4s ease, color 0.4s ease;
     -webkit-font-smoothing: antialiased;
   }
 
   .container { max-width: 550px; margin: 0 auto; }
   
+  /* Navigation & Views */
+  .view-container { 
+    display: none; 
+    opacity: 0;
+    transform: scale(0.98) translateY(10px);
+    transition: var(--transition-smooth);
+  }
+  
+  .view-active { 
+    display: block; 
+    animation: fadeScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fadeScale {
+    from { opacity: 0; transform: scale(0.98) translateY(15px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
   header { 
     display: flex;
     flex-direction: column;
@@ -65,88 +84,117 @@
     position: absolute; right: 0; top: 0;
     background: none; border: none; cursor: pointer;
     width: 40px; height: 40px; color: var(--text);
+    transition: transform 0.3s ease, color 0.3s ease;
   }
 
-  .theme-toggle svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; }
+  .theme-toggle:hover {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  .theme-toggle svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .sun { display: block; }
   .moon { display: none; }
   [data-theme="dark"] .sun { display: none; }
   [data-theme="dark"] .moon { display: block; }
 
-  .badge { display: inline-block; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--primary); border: 1px solid var(--primary); padding: 6px 16px; border-radius: 4px; margin-bottom: 20px; font-weight: 700; }
-  h1 { font-size: 32px; font-weight: 800; line-height: 1; text-align: center; }
+  .badge { display: inline-block; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--primary); border: 1px solid var(--primary); padding: 6px 16px; border-radius: 4px; margin-bottom: 20px; font-weight: 700; transition: var(--transition-smooth); }
+  h1 { font-size: 32px; font-weight: 800; line-height: 1.1; text-align: center; }
   h1 span { color: var(--primary); }
 
+  /* Home Menu Style */
+  .menu-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 30px; }
+  .menu-card { 
+    background: var(--card-bg); 
+    border: 1px solid var(--border); 
+    padding: 24px; 
+    border-radius: 16px; 
+    cursor: pointer; 
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .menu-card:hover { 
+    border-color: var(--primary); 
+    transform: translateY(-4px); 
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+  }
+  [data-theme="dark"] .menu-card:hover { box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4); }
+  
+  .menu-card.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); transform: none; box-shadow: none; hover: border-color: var(--border); }
+  .menu-card.disabled:hover { border-color: var(--border); }
+  
+  .menu-icon { 
+    color: var(--primary);
+    background: var(--pill-bg); 
+    padding: 12px; 
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+  }
+  .menu-icon svg { width: 24px; height: 24px; stroke-width: 1.5; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  
+  .menu-card:hover .menu-icon { transform: scale(1.05); }
+
+  .menu-info h3 { font-size: 18px; font-weight: 800; margin: 0; }
+
+  .back-btn {
+    background: none; border: none; color: var(--muted); font-family: inherit;
+    font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 6px;
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+  .back-btn:hover { color: var(--text); transform: translateX(-3px); }
+
+  /* Dashboard Styles */
   .revenue-section { text-align: center; margin-bottom: 40px; }
-  .revenue-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
-  .revenue-value { font-size: 42px; font-weight: 800; color: var(--primary); }
-
-  .section-group {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 30px;
-    border: 1px solid var(--border);
-    transition: background 0.3s, border-color 0.3s;
+  .revenue-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; transition: color 0.3s ease; }
+  .revenue-value { font-size: 42px; font-weight: 800; color: var(--primary); transition: transform 0.3s ease; }
+  
+  .section-group { background: var(--card-bg); border-radius: 16px; padding: 24px; margin-bottom: 30px; border: 1px solid var(--border); transition: var(--transition-smooth); }
+  .section-group:hover { border-color: rgba(214, 30, 48, 0.3); }
+  
+  .section-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text); margin-bottom: 20px; border-bottom: 3px solid var(--primary); font-weight: 900; padding-bottom: 6px; display: inline-block; transition: color 0.3s ease; }
+  .date-row { display: flex; justify-content: center; gap: 12px; margin-bottom: 35px; padding: 10px; }
+  
+  select { 
+    font-family: inherit; font-size: 13px; font-weight: 700; 
+    background-color: var(--card-bg); color: var(--text); 
+    border: 1px solid var(--border); border-radius: 6px; 
+    padding: 8px 14px; outline: none; cursor: pointer;
+    transition: var(--transition-smooth);
   }
-
-  .section-label { 
-    font-size: 12px; 
-    text-transform: uppercase; 
-    letter-spacing: 2px; 
-    color: var(--text); 
-    margin-bottom: 20px; 
-    border-bottom: 3px solid var(--primary); 
-    font-weight: 900; 
-    padding-bottom: 6px;
-    display: inline-block;
-  }
-
-  .date-row { 
-    display: flex; 
-    justify-content: center; 
-    gap: 12px; 
-    margin-bottom: 35px; 
-    padding: 10px;
-  }
-
-  select {
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    background-color: var(--card-bg);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 12px;
-    outline: none;
-    cursor: pointer;
-  }
-
-  .deck-list { display: flex; flex-direction: column; gap: 0; }
-  .deck-item { display: flex; justify-content: space-between; align-items: flex-end; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.03); }
+  select:hover, select:focus { border-color: var(--primary); }
+  
+  .deck-item { display: flex; justify-content: space-between; align-items: flex-end; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.03); transition: border-color 0.3s ease; }
   [data-theme="dark"] .deck-item { border-bottom: 1px solid rgba(255,255,255,0.03); }
-  .deck-item:last-child { border-bottom: none; }
   
-  .deck-title { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .deck-title { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; color: var(--text); transition: color 0.3s ease;}
   .target-pill { font-size: 10px; font-weight: 800; color: var(--primary); background: var(--pill-bg); padding: 2px 6px; border-radius: 4px; display: none; }
-
-  .input-field { display: flex; align-items: baseline; gap: 6px; border-bottom: 2px solid var(--border); padding-bottom: 4px; transition: border-color 0.3s; }
-  .input-field:focus-within { border-color: var(--primary); }
-  input { font-family: inherit; border: none; background: none; font-size: 18px; font-weight: 800; width: 110px; text-align: right; color: var(--text); outline: none; }
   
-  .unit { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .input-field { display: flex; align-items: baseline; gap: 6px; border-bottom: 2px solid var(--border); padding-bottom: 4px; transition: border-color 0.3s ease; }
+  .input-field:focus-within { border-bottom-color: var(--primary); }
+  
+  input { font-family: inherit; border: none; background: none; font-size: 18px; font-weight: 800; width: 110px; text-align: right; color: var(--text); outline: none; transition: color 0.3s ease; }
+  .unit { font-size: 12px; font-weight: 700; color: var(--muted); transition: color 0.3s ease; }
   .auto-result { font-size: 18px; font-weight: 800; color: var(--primary); }
-
-  .export-btn {
-    width: 100%; background: var(--primary); color: white; border: none; padding: 18px;
-    font-family: 'Denton Variable', serif; font-weight: 800; font-size: 14px;
-    text-transform: uppercase; letter-spacing: 1px; border-radius: 12px; cursor: pointer;
-    margin-top: 10px; margin-bottom: 50px;
+  
+  .export-btn { 
+    width: 100%; background: var(--primary); color: white; border: none; 
+    padding: 18px; font-family: 'Denton Variable', serif; font-weight: 800; 
+    font-size: 14px; text-transform: uppercase; letter-spacing: 1px; 
+    border-radius: 12px; cursor: pointer; margin-top: 10px; margin-bottom: 50px;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
   }
+  .export-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(214, 30, 48, 0.25); }
+  .export-btn:active { transform: translateY(0); }
 
-  .charts-grid { display: flex; flex-direction: column; gap: 50px; border-top: 1px solid var(--border); padding-top: 40px; padding-bottom: 60px; }
-  .chart-header { font-size: 12px; text-transform: uppercase; color: var(--text); text-align: center; font-weight: 800; margin-bottom: 25px; }
+  .charts-grid { display: flex; flex-direction: column; gap: 50px; border-top: 1px solid var(--border); padding-top: 40px; padding-bottom: 60px; transition: border-color 0.3s ease;}
+  .chart-header { font-size: 12px; text-transform: uppercase; color: var(--text); text-align: center; font-weight: 800; margin-bottom: 25px; transition: color 0.3s ease;}
   .chart-container { height: 250px; position: relative; }
 
   @media (max-width: 768px) { h1 { font-size: 28px; } .revenue-value { font-size: 36px; } }
@@ -155,137 +203,162 @@
 <body data-theme="light">
 
 <div class="container">
-  <header>
-    <button class="theme-toggle" id="themeToggle">
-      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-      <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-    </button>
-    <div class="badge">CV. Roti Semua Generasi</div>
-    <h1><span>TAOBUN</span><br>DASHBOARD</h1>
-  </header>
+  
+  <div id="home-view" class="view-container view-active">
+    <header>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">
+        <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+      <div class="badge">CV. Roti Semua Generasi</div>
+      <h1>WELCOME TO<br><span>TAOBUN</span> MANAGEMENT</h1>
+    </header>
 
-  <div class="revenue-section">
-    <p class="revenue-label">Revenue</p>
-    <div class="revenue-value" id="totalRevenue">Rp 0</div>
-  </div>
-
-  <p class="section-label" style="text-align: center; border-bottom: none; width: 100%; margin-top: 0;">Report Period</p>
-  <div class="date-row">
-    <select id="repMonth">
-      <option value="01">Januari</option><option value="02" selected>Februari</option>
-      <option value="03">Maret</option><option value="04">April</option>
-      <option value="05">Mei</option><option value="06">Juni</option>
-      <option value="07">Juli</option><option value="08">Agustus</option>
-      <option value="09">September</option><option value="10">Oktober</option>
-      <option value="11">November</option><option value="12">Desember</option>
-    </select>
-    <select id="repYear"></select>
-  </div>
-
-  <div class="deck-list">
-    <div class="section-group">
-      <p class="section-label">Market</p>
-      <div class="deck-item">
-        <div class="deck-info"><p class="deck-title">Leads <span id="targetLeads" class="target-pill"></span></p></div>
-        <div class="input-field"><input type="text" id="leads" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
-      </div>
-      <div class="deck-item">
-        <div class="deck-info"><p class="deck-title">Conv. Target <span id="targetConvRate" class="target-pill"></span></p></div>
-        <div class="input-field"><input type="text" id="convTargetInput" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">%</span></div>
-      </div>
-      <div class="deck-item" style="opacity: 0.8;">
-        <div class="deck-info">
-          <p class="deck-title">Lead Conv. Rate <span id="leadStatusPill" class="target-pill" style="display: none; border-radius: 20px;"></span></p>
+    <div class="menu-grid">
+      <div class="menu-card" onclick="showView('revenue-view')">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
         </div>
-        <div class="auto-result" id="leadConvDisplay">0%</div>
+        <div class="menu-info">
+          <h3>Revenue Dashboard</h3>
+        </div>
       </div>
-    </div>
 
-    <div class="section-group">
-      <p class="section-label">Customer Breakdown</p>
-      <div class="deck-item">
-        <div class="deck-info"><p class="deck-title">Total Customers <span id="targetTotalCust" class="target-pill"></span></p></div>
-        <div class="input-field"><input type="text" id="totalCustInput" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
-      </div>
-      <div class="deck-item">
-        <div class="deck-info"><p class="deck-title">Retention <span id="targetRetention" class="target-pill"></span></p></div>
-        <div class="input-field"><input type="text" id="retentionCust" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
-      </div>
-      <div class="deck-item" style="opacity: 0.7;">
-        <div class="deck-info"><p class="deck-title">New Cust <span id="targetNewCust" class="target-pill"></span></p></div>
-        <div class="auto-result" id="newCustDisplay">0</div>
-      </div>
-      <div class="deck-item" style="opacity: 0.7;">
-        <div class="deck-info"><p class="deck-title">Conversion <span id="targetConv" class="target-pill"></span></p></div>
-        <div class="auto-result" id="convRateDisplay">0%</div>
-      </div>
-    </div>
-
-    <div class="section-group">
-      <p class="section-label">Value</p>
-      <div class="deck-item">
-        <div class="deck-info"><p class="deck-title">Basket Size <span id="targetBasket" class="target-pill"></span></p></div>
-        <div class="input-field"><span class="unit">Rp</span><input type="text" id="basketSize" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
-      </div>
-      <div class="deck-item">
-        <div class="deck-info"><p class="deck-title">Avg Tx <span id="targetTx" class="target-pill"></span></p></div>
-        <div class="input-field"><input type="text" id="avgTx" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">x</span></div>
-      </div>
-    </div>
-
-    <div class="section-group" style="margin-bottom: 10px;">
-      <p class="section-label">Simulation</p>
-      <div class="deck-item">
-        <div class="deck-info"><p class="deck-title">Proyeksi Bulan</p></div>
-        <select id="projMonth">
-          <option value="01">Januari</option><option value="02">Februari</option>
-          <option value="03" selected>Maret</option><option value="04">April</option>
-          <option value="05">Mei</option><option value="06">Juni</option>
-          <option value="07">Juli</option><option value="08">Agustus</option>
-          <option value="09">September</option><option value="10">Oktober</option>
-          <option value="11">November</option><option value="12">Desember</option>
-        </select>
-      </div>
-      <div class="deck-item">
-        <div class="deck-info"><p class="deck-title">Global Opt. Target</p></div>
-        <div class="input-field"><input type="text" id="optPercent" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"><span class="unit" style="color: var(--primary);">%</span></div>
-      </div>
-      <div class="deck-item" style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 15px;">
-        <div class="deck-info"><p class="deck-title" style="color: var(--primary);">Projected Revenue</p></div>
-        <div class="auto-result" id="projectedRevenueDisplay">Rp 0</div>
+      <div class="menu-card disabled">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <div class="menu-info">
+          <h3>Coming Soon!</h3>
+        </div>
       </div>
     </div>
   </div>
 
-  <button class="export-btn" onclick="exportToExcel()">Export Report to Excel</button>
+  <div id="revenue-view" class="view-container">
+    <button class="back-btn" onclick="showView('home-view')">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Back to Menu
+    </button>
+    <header>
+      <h1><span>TAOBUN</span><br>REVENUE</h1>
+    </header>
 
-  <div class="charts-grid">
-    <div class="chart-box"><p class="chart-header">Conversion Funnel (%)</p><div class="chart-container"><canvas id="funnelChart"></canvas></div></div>
-    <div class="chart-box"><p class="chart-header" id="growthHeader">Revenue Growth Strategy (%)</p><div class="chart-container"><canvas id="growthChart"></canvas></div></div>
+    <div class="revenue-section">
+      <p class="revenue-label">Total Revenue</p>
+      <div class="revenue-value" id="totalRevenue">Rp 0</div>
+    </div>
+
+    <p class="section-label" style="text-align: center; border-bottom: none; width: 100%; margin-top: 0;">Report Period</p>
+    <div class="date-row">
+      <select id="repMonth" onchange="calculate()">
+        <option value="01">Januari</option><option value="02" selected>Februari</option>
+        <option value="03">Maret</option><option value="04">April</option>
+        <option value="05">Mei</option><option value="06">Juni</option>
+        <option value="07">Juli</option><option value="08">Agustus</option>
+        <option value="09">September</option><option value="10">Oktober</option>
+        <option value="11">November</option><option value="12">Desember</option>
+      </select>
+      <select id="repYear" onchange="calculate()"></select>
+    </div>
+
+    <div class="deck-list">
+      <div class="section-group">
+        <p class="section-label">Market</p>
+        <div class="deck-item">
+          <div class="deck-info"><p class="deck-title">Leads <span id="targetLeads" class="target-pill"></span></p></div>
+          <div class="input-field"><input type="text" id="leads" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
+        </div>
+        <div class="deck-item">
+          <div class="deck-info"><p class="deck-title">Conv. Target <span id="targetConvRate" class="target-pill"></span></p></div>
+          <div class="input-field"><input type="text" id="convTargetInput" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">%</span></div>
+        </div>
+        <div class="deck-item" style="opacity: 0.8;">
+          <div class="deck-info"><p class="deck-title">Lead Conv. Rate <span id="leadStatusPill" class="target-pill"></span></p></div>
+          <div class="auto-result" id="leadConvDisplay">0%</div>
+        </div>
+      </div>
+
+      <div class="section-group">
+        <p class="section-label">Value</p>
+        <div class="deck-item">
+          <div class="deck-info"><p class="deck-title">Basket Size <span id="targetBasket" class="target-pill"></span></p></div>
+          <div class="input-field"><span class="unit">Rp</span><input type="text" id="basketSize" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
+        </div>
+        <div class="deck-item">
+          <div class="deck-info"><p class="deck-title">Avg Tx <span id="targetTx" class="target-pill"></span></p></div>
+          <div class="input-field"><input type="text" id="avgTx" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">x</span></div>
+        </div>
+        <input type="hidden" id="totalCustInput" value="100"> 
+        <input type="hidden" id="retentionCust" value="0">
+      </div>
+
+      <div class="section-group">
+        <p class="section-label">Simulation</p>
+        <div class="deck-item">
+          <div class="deck-info"><p class="deck-title">Growth Target</p></div>
+          <div class="input-field"><input type="text" id="optPercent" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"><span class="unit" style="color: var(--primary);">%</span></div>
+        </div>
+        <div class="deck-item" style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 15px;">
+          <div class="deck-info"><p class="deck-title" style="color: var(--primary);">Projected Revenue</p></div>
+          <div class="auto-result" id="projectedRevenueDisplay">Rp 0</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="export-btn" onclick="exportToExcel()">Export Report to Excel</button>
+
+    <div class="charts-grid">
+      <div class="chart-box"><p class="chart-header">Conversion Funnel (%)</p><div class="chart-container"><canvas id="funnelChart"></canvas></div></div>
+      <div class="chart-box"><p class="chart-header">Revenue Growth Strategy (%)</p><div class="chart-container"><canvas id="growthChart"></canvas></div></div>
+    </div>
   </div>
+
 </div>
 
 <script>
 Chart.register(ChartDataLabels);
 let funnelChart, growthChart;
 
-function populateDates() {
-  const yearSel = document.getElementById('repYear');
-  const startYear = 2026;
-  for(let i=startYear; i<=startYear+10; i++) {
-    let opt = document.createElement('option');
-    opt.value = i; opt.textContent = i;
-    if(i === startYear) opt.selected = true;
-    yearSel.appendChild(opt);
+// NAVIGATION LOGIC
+function showView(viewId) {
+  document.querySelectorAll('.view-container').forEach(v => {
+    v.classList.remove('view-active');
+  });
+  
+  const targetView = document.getElementById(viewId);
+  targetView.classList.add('view-active');
+  
+  if(viewId === 'revenue-view') {
+    setTimeout(() => {
+      if(funnelChart) funnelChart.update();
+      if(growthChart) growthChart.update();
+    }, 150);
   }
 }
 
-const themeToggle = document.getElementById('themeToggle');
-themeToggle.addEventListener('click', () => {
+function toggleTheme() {
   const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
   document.body.setAttribute('data-theme', newTheme);
   updateChartsTheme(newTheme);
-});
+}
+
+function populateDates() {
+  const yearSel = document.getElementById('repYear');
+  if(!yearSel) return;
+  const startYear = 2026;
+  for(let i=startYear; i<=startYear+5; i++) {
+    let opt = document.createElement('option');
+    opt.value = i; opt.textContent = i;
+    yearSel.appendChild(opt);
+  }
+}
 
 function updateChartsTheme(theme) {
   const color = theme === 'dark' ? '#e8e8f0' : '#1a1a1a';
@@ -305,65 +378,21 @@ function initCharts() {
 
   funnelChart = new Chart(document.getElementById('funnelChart'), {
     type: 'bar',
-    data: { labels: ['Leads', 'Total Cust', 'Transactions'], datasets: [{ data: [0,0,0], backgroundColor: [document.body.getAttribute('data-theme') === 'dark' ? '#1a1a26' : '#f4f4f4', '#d61e30', '#1a1a1a'], borderRadius: 4, barThickness: 25 }] },
-    options: { 
-      indexAxis: 'y', 
-      responsive: true, 
-      maintainAspectRatio: false, 
-      layout: { padding: { right: 40 } },
-      plugins: { 
-        legend: {display: false}, 
-        datalabels: { 
-          anchor: 'end', 
-          align: 'right', 
-          color: color, 
-          font: font, 
-          formatter: (v, ctx) => { 
-            const d = ctx.chart.data.datasets[0].data;
-            if (d[0] === 0) return ''; 
-            if (ctx.dataIndex === 0) return '100%'; 
-            return ((v/d[0])*100).toFixed(1)+'%'; 
-          } 
-        } 
-      }, 
-      scales: { x: {display: false}, y: {ticks: {font: {family: 'Denton Variable', size: 11, weight: '700'}, color}, grid: {display: false}} } 
-    }
+    data: { labels: ['Leads', 'Customers', 'Transactions'], datasets: [{ data: [0,0,0], backgroundColor: ['#f4f4f4', '#d61e30', '#1a1a1a'], borderRadius: 4, barThickness: 25 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { color, font } }, scales: { x: {display: false}, y: {ticks: {color, font: {family: 'Denton Variable'}}, grid: {display: false}} }, animation: { duration: 800, easing: 'easeOutQuart' } }
   });
 
   growthChart = new Chart(document.getElementById('growthChart'), {
     type: 'bar',
-    data: { labels: ['Current', 'Optimized'], datasets: [{ data: [0,0], backgroundColor: ['#1a1a1a', '#d61e30'], borderRadius: 6, barThickness: 50 }] },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false, 
-      layout: { padding: { top: 30 } },
-      plugins: { 
-        legend: {display: false}, 
-        datalabels: { 
-          anchor: 'end', 
-          align: 'top', 
-          color: color, 
-          font: font, 
-          formatter: (v, ctx) => { 
-            const d = ctx.chart.data.datasets[0].data; 
-            if(ctx.dataIndex === 0) return 'BASE'; 
-            if(d[0] === 0 || v === 0) return ''; 
-            const growth = (((v/d[0])-1)*100).toFixed(1);
-            return `TARGET (+${growth}%)`; 
-          } 
-        } 
-      }, 
-      scales: { y: {display: false}, x: {ticks: {font: {family: 'Denton Variable', size: 11, weight: '700'}, color}, grid: {display: false}} } 
-    }
+    data: { labels: ['Current', 'Target'], datasets: [{ data: [0,0], backgroundColor: ['#1a1a1a', '#d61e30'], borderRadius: 6, barThickness: 50 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { color, font } }, scales: { y: {display: false}, x: {ticks: {color, font: {family: 'Denton Variable'}}, grid: {display: false}} }, animation: { duration: 800, easing: 'easeOutQuart' } }
   });
 }
 
 function formatNumber(val) {
   let clean = val.toString().replace(/[^0-9,]/g, "");
   let parts = clean.split(",");
-  let int = parts[0];
-  if (int.length > 1) int = int.replace(/^0+/, "");
-  if (int === "") int = "0";
+  let int = parts[0].replace(/^0+/, "") || "0";
   return int.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (parts.length > 1 ? "," + parts[1] : "");
 }
 
@@ -378,119 +407,26 @@ function handleInput(el) {
 }
 
 function fmtCurrency(n) {
-  if (n === 0) return 'Rp 0';
-  if (n >= 1e9) return 'Rp ' + (n/1e9).toFixed(2).replace('.', ',') + ' M';
-  if (n >= 1e6) return 'Rp ' + (n/1e6).toFixed(1).replace('.', ',') + ' Jt';
   return 'Rp ' + n.toLocaleString('id-ID', { maximumFractionDigits: 0 });
-}
-
-function updateTargetPill(id, value, isVisible, prefix = "", suffix = "") {
-  const el = document.getElementById(id);
-  if (isVisible && value > 0) {
-    el.textContent = `→ ${prefix}${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}${suffix}`;
-    el.style.display = "inline-block";
-  } else el.style.display = "none";
 }
 
 function calculate() {
   const leads = cleanNumber(document.getElementById('leads').value);
-  const convTarget = cleanNumber(document.getElementById('convTargetInput').value); 
-  const totalCust = cleanNumber(document.getElementById('totalCustInput').value);
-  const retention = cleanNumber(document.getElementById('retentionCust').value);
+  const convTarget = cleanNumber(document.getElementById('convTargetInput').value);
   const basket = cleanNumber(document.getElementById('basketSize').value);
   const avgTx = cleanNumber(document.getElementById('avgTx').value);
   const opt = cleanNumber(document.getElementById('optPercent').value);
 
-  // Global Factor (Jika Opt % diisi)
   const factor = 1 + (opt/100);
-  
-  // LOGIKA PROYEKSI TERINTEGRASI
-  const projLeads = leads * factor;
-  const projConvTarget = convTarget * factor; // Conv rate juga naik sesuai target optimasi
-  const projectedTotalCust = (opt > 0 && convTarget > 0) ? (projLeads * (projConvTarget / 100)) : totalCust;
-  
+  const totalCust = leads * (convTarget/100) || 0;
   const currentRev = totalCust * avgTx * basket;
-  const optRev = projectedTotalCust * (avgTx * factor) * (basket * factor);
+  const optRev = currentRev * Math.pow(factor, 3);
 
-  // Status Conv Rate Saat Ini
-  const currentLeadConvRate = leads > 0 ? (totalCust / leads) * 100 : 0;
-  const leadConvDisplay = document.getElementById('leadConvDisplay');
-  const leadStatusPill = document.getElementById('leadStatusPill');
-  leadConvDisplay.textContent = currentLeadConvRate.toFixed(1) + '%';
-
-  if (leads > 0) {
-    leadStatusPill.style.display = "inline-block";
-    if (currentLeadConvRate >= convTarget && convTarget > 0) {
-      leadStatusPill.textContent = `TERCAPAI (${convTarget}%)`;
-      leadStatusPill.style.color = "#27ae60"; 
-      leadStatusPill.style.background = "rgba(39, 174, 96, 0.1)";
-      leadStatusPill.style.borderColor = "#27ae60";
-      leadConvDisplay.style.color = "#27ae60";
-    } else {
-      leadStatusPill.textContent = convTarget > 0 ? "BELUM TERCAPAI" : "SET TARGET";
-      leadStatusPill.style.color = "var(--primary)"; 
-      leadStatusPill.style.background = "var(--pill-bg)";
-      leadStatusPill.style.borderColor = "var(--primary)";
-      leadConvDisplay.style.color = "var(--text)";
-    }
-  } else {
-    leadStatusPill.style.display = "none";
-  }
-
-  // Update UI & Target Pills
   document.getElementById('totalRevenue').textContent = fmtCurrency(currentRev);
   document.getElementById('projectedRevenueDisplay').textContent = fmtCurrency(optRev);
-  
-  const newCust = Math.max(0, totalCust - retention);
-  document.getElementById('newCustDisplay').textContent = Math.round(newCust).toLocaleString('id-ID');
-  document.getElementById('convRateDisplay').textContent = currentLeadConvRate.toFixed(1) + '%';
-  
-  const show = opt > 0;
-  // Menampilkan proyeksi jika Global Opt. Target > 0
-  updateTargetPill('targetLeads', projLeads, show); 
-  updateTargetPill('targetConvRate', projConvTarget, show, "", "%");
-  updateTargetPill('targetTotalCust', projectedTotalCust, show);
-  updateTargetPill('targetBasket', basket * factor, show, "Rp ");
-  updateTargetPill('targetTx', avgTx * factor, show, "", "x");
 
   if(funnelChart) { funnelChart.data.datasets[0].data = [leads, totalCust, totalCust * avgTx]; funnelChart.update(); }
   if(growthChart) { growthChart.data.datasets[0].data = [currentRev, optRev]; growthChart.update(); }
-}
-
-function exportToExcel() {
-  const m = document.getElementById('repMonth').selectedOptions[0].text;
-  const y = document.getElementById('repYear').value;
-  
-  const leads = cleanNumber(document.getElementById('leads').value);
-  const convTarget = cleanNumber(document.getElementById('convTargetInput').value);
-  const totalCust = cleanNumber(document.getElementById('totalCustInput').value);
-  const basket = cleanNumber(document.getElementById('basketSize').value);
-  const tx = cleanNumber(document.getElementById('avgTx').value);
-  const opt = cleanNumber(document.getElementById('optPercent').value);
-  const factor = 1 + (opt / 100);
-
-  const projLeads = leads * factor;
-  const projConv = convTarget * factor;
-  const projCust = (opt > 0 && convTarget > 0) ? (projLeads * (projConv / 100)) : totalCust;
-
-  const data = [
-    ["TAOBUN GROWTH STRATEGY", "", "", ""],
-    ["Bulan Laporan:", `${m} ${y}`, "", ""],
-    ["", "", "", ""],
-    ["METRIK", "CURRENT", "PROJECTED (+"+opt+"%)", "GROWTH RATE"],
-    ["Leads", leads, projLeads.toFixed(0), "+"+opt+"%"],
-    ["Conv. Rate", convTarget + "%", projConv.toFixed(1) + "%", "+"+opt+"%"],
-    ["Total Customers", totalCust, projCust.toFixed(0), (projCust/totalCust*100-100).toFixed(1) + "%"],
-    ["Basket Size", fmtCurrency(basket), fmtCurrency(basket * factor), "+"+opt+"%"],
-    ["Avg. Transaction", tx + " x", (tx * factor).toFixed(1) + " x", "+"+opt+"%"],
-    ["", "", "", ""],
-    ["TOTAL REVENUE", fmtCurrency(totalCust*tx*basket), fmtCurrency(projCust * (tx*factor) * (basket*factor)), "+"+(( (projCust * (tx*factor) * (basket*factor)) / (totalCust*tx*basket) - 1 ) * 100 || 0).toFixed(1)+"%"],
-  ];
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  ws['!cols'] = [{wch: 30}, {wch: 20}, {wch: 25}, {wch: 15}];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Strategy");
-  XLSX.writeFile(wb, `Taobun_Growth_${m}_${y}.xlsx`);
 }
 
 window.onload = () => { populateDates(); initCharts(); calculate(); };
