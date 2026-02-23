@@ -85,11 +85,8 @@
   .menu-grid { display: grid; gap: 12px; margin-top: 10px; }
   .menu-card { background: var(--card); border: 1px solid var(--border); padding: 24px; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; gap: 20px; transition: var(--transition-smooth); box-shadow: var(--shadow); }
   .menu-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-  
-  /* Style for Disabled Menu Card */
   .menu-card.disabled { cursor: not-allowed; opacity: 0.7; filter: grayscale(1); }
   .menu-card.disabled:hover { transform: none; border-color: var(--border); }
-  
   .menu-icon { background: var(--primary-light); color: var(--primary); width: 54px; height: 54px; border-radius: 18px; display: flex; align-items: center; justify-content: center; }
   .menu-icon svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 2; }
   .menu-card h3 { font-size: 17px; font-weight: 700; }
@@ -189,26 +186,13 @@
     <div class="hero-revenue"><p class="revenue-label">Actual Monthly Revenue</p><div class="revenue-value" id="totalRevenue">Rp 0</div></div>
 
     <div class="date-selector">
-      <div class="custom-select-container" id="containerMonth">
-        <div class="select-trigger" onclick="toggleDropdown('containerMonth')"><span id="selectedMonth">Februari</span></div>
-        <div class="select-options">
-            <div class="option-item" onclick="selectOption('Month', '01', 'Januari')">Januari</div>
-            <div class="option-item" onclick="selectOption('Month', '02', 'Februari')">Februari</div>
-            <div class="option-item" onclick="selectOption('Month', '03', 'Maret')">Maret</div>
-            <div class="option-item" onclick="selectOption('Month', '04', 'April')">April</div>
-            <div class="option-item" onclick="selectOption('Month', '05', 'Mei')">Mei</div>
-            <div class="option-item" onclick="selectOption('Month', '06', 'Juni')">Juni</div>
-            <div class="option-item" onclick="selectOption('Month', '07', 'Juli')">Juli</div>
-            <div class="option-item" onclick="selectOption('Month', '08', 'Agustus')">Agustus</div>
-            <div class="option-item" onclick="selectOption('Month', '09', 'September')">September</div>
-            <div class="option-item" onclick="selectOption('Month', '10', 'Oktober')">Oktober</div>
-            <div class="option-item" onclick="selectOption('Month', '11', 'November')">November</div>
-            <div class="option-item" onclick="selectOption('Month', '12', 'Desember')">Desember</div>
-        </div>
+      <div class="custom-select-container" id="containerMonthRev">
+        <div class="select-trigger" onclick="toggleDropdown('containerMonthRev')"><span id="selectedMonthRev">Februari</span></div>
+        <div class="select-options month-options-list"></div>
       </div>
-      <div class="custom-select-container" id="containerYear">
-        <div class="select-trigger" onclick="toggleDropdown('containerYear')"><span id="selectedYear">2026</span></div>
-        <div class="select-options" id="yearOptions"></div>
+      <div class="custom-select-container" id="containerYearRev">
+        <div class="select-trigger" onclick="toggleDropdown('containerYearRev')"><span id="selectedYearRev">2026</span></div>
+        <div class="select-options year-options-list"></div>
       </div>
     </div>
 
@@ -258,6 +242,17 @@
     </div>
     <button class="back-btn" onclick="showView('home-view')">← Back to Suite</button>
 
+    <div class="date-selector">
+      <div class="custom-select-container" id="containerMonthLead">
+        <div class="select-trigger" onclick="toggleDropdown('containerMonthLead')"><span id="selectedMonthLead">Februari</span></div>
+        <div class="select-options month-options-list"></div>
+      </div>
+      <div class="custom-select-container" id="containerYearLead">
+        <div class="select-trigger" onclick="toggleDropdown('containerYearLead')"><span id="selectedYearLead">2026</span></div>
+        <div class="select-options year-options-list"></div>
+      </div>
+    </div>
+
     <div class="section-group">
       <span class="section-label">Funnel Metrics</span>
       <div class="deck-item"><div class="deck-title">Reach / Impressions</div><div class="input-wrapper"><input type="text" id="reach" class="nav-input lead-field" value="0" oninput="handleLeadInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"></div></div>
@@ -279,6 +274,12 @@
 Chart.register(ChartDataLabels);
 let funnelChart, growthChart;
 let currentMonth = "02", currentYear = "2026";
+const months = [
+    {v: '01', l: 'Januari'}, {v: '02', l: 'Februari'}, {v: '03', l: 'Maret'},
+    {v: '04', l: 'April'}, {v: '05', l: 'Mei'}, {v: '06', l: 'Juni'},
+    {v: '07', l: 'Juli'}, {v: '08', l: 'Agustus'}, {v: '09', l: 'September'},
+    {v: '10', l: 'Oktober'}, {v: '11', l: 'November'}, {v: '12', l: 'Desember'}
+];
 
 function formatNumber(val) {
   let clean = val.toString().replace(/[^0-9]/g, "");
@@ -291,19 +292,8 @@ function formatShortNumber(num) {
   return num.toLocaleString('id-ID');
 }
 
-function clearIfZero(el) {
-  if (el.value === "0") {
-    el.value = "";
-  }
-}
-
-function restoreIfEmpty(el) {
-  if (el.value === "") {
-    el.value = "0";
-    calculate();
-    calculateLeads();
-  }
-}
+function clearIfZero(el) { if (el.value === "0") el.value = ""; }
+function restoreIfEmpty(el) { if (el.value === "") { el.value = "0"; calculate(); calculateLeads(); } }
 
 function showView(id) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('view-active'));
@@ -325,10 +315,18 @@ function toggleDropdown(id) {
 }
 
 function selectOption(type, value, label) {
-    if (type === 'Month') { currentMonth = value; document.getElementById('selectedMonth').textContent = label; }
-    else { currentYear = value; document.getElementById('selectedYear').textContent = label; }
+    if (type === 'Month') { 
+        currentMonth = value; 
+        document.getElementById('selectedMonthRev').textContent = label;
+        document.getElementById('selectedMonthLead').textContent = label;
+    } else { 
+        currentYear = value; 
+        document.getElementById('selectedYearRev').textContent = label;
+        document.getElementById('selectedYearLead').textContent = label;
+    }
     document.querySelectorAll('.custom-select-container').forEach(c => c.classList.remove('active'));
     calculate();
+    calculateLeads();
 }
 
 function handleInput(el) {
@@ -432,42 +430,16 @@ function initCharts() {
   funnelChart = new Chart(document.getElementById('funnelChart'), {
     type: 'bar',
     data: { labels: ['Leads', 'Users', 'Orders'], datasets: [{ data: [0,0,0], backgroundColor: ['#e9ecef', '#d61e30', '#1a1a2e'], borderRadius: 10 }] },
-    options: { 
-        indexAxis: 'y', 
-        responsive: true, 
-        maintainAspectRatio: false, 
-        plugins: { 
-            legend: {display: false},
-            datalabels: { display: false } 
-        } 
-    }
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { display: false } } }
   });
   
   growthChart = new Chart(document.getElementById('growthChart'), {
     type: 'bar',
     data: { labels: ['Current', 'Target'], datasets: [{ data: [0,0], backgroundColor: ['#1a1a2e', '#d61e30'], borderRadius: 12 }] },
     options: { 
-        responsive: true, 
-        maintainAspectRatio: false,
-        layout: { padding: { top: 30 } }, 
-        plugins: { 
-            legend: {display: false}, 
-            datalabels: {
-                anchor: 'end', 
-                align: 'top', 
-                offset: 5,
-                font: {weight: '800'}, 
-                formatter: (v) => 'Rp' + formatShortNumber(v)
-            } 
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) { return 'Rp' + formatShortNumber(value); }
-                }
-            }
-        }
+        responsive: true, maintainAspectRatio: false, layout: { padding: { top: 30 } }, 
+        plugins: { legend: {display: false}, datalabels: { anchor: 'end', align: 'top', offset: 5, font: {weight: '800'}, formatter: (v) => 'Rp' + formatShortNumber(v) } },
+        scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return 'Rp' + formatShortNumber(value); } } } }
     }
   });
 }
@@ -517,35 +489,39 @@ function loadData() {
 function resetMetrics() { 
     if (confirm("Reset seluruh data di dashboard ini?")) { 
         const ids = ['leads', 'convTargetInput', 'totalCustInput', 'retentionCust', 'basketSize', 'avgTx', 'optPercent'];
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.value = "0";
-        });
+        ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = "0"; });
         if(document.getElementById('growthSlider')) document.getElementById('growthSlider').value = "0";
-        saveData();
-        calculate();
+        saveData(); calculate();
     } 
 }
 
 function resetLeadMetrics() {
     if (confirm("Reset data funnel di Lead Management?")) {
         const ids = ['reach', 'visits', 'links', 'orders', 'payments'];
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.value = "0";
-        });
-        saveData();
-        calculateLeads();
+        ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = "0"; });
+        saveData(); calculateLeads();
     }
 }
 
 window.onload = () => {
-    const yrBox = document.getElementById('yearOptions');
-    for(let i=2026; i<=2030; i++) { 
-        let d = document.createElement('div'); d.className = 'option-item'; d.textContent = i;
-        d.onclick = () => selectOption('Year', i.toString(), i.toString());
-        yrBox.appendChild(d);
-    }
+    const monthContainers = document.querySelectorAll('.month-options-list');
+    monthContainers.forEach(container => {
+        months.forEach(m => {
+            let d = document.createElement('div'); d.className = 'option-item'; d.textContent = m.l;
+            d.onclick = () => selectOption('Month', m.v, m.l);
+            container.appendChild(d);
+        });
+    });
+
+    const yearContainers = document.querySelectorAll('.year-options-list');
+    yearContainers.forEach(container => {
+        for(let i=2026; i<=2030; i++) { 
+            let d = document.createElement('div'); d.className = 'option-item'; d.textContent = i;
+            d.onclick = () => selectOption('Year', i.toString(), i.toString());
+            container.appendChild(d);
+        }
+    });
+
     initCharts();
     loadData();
     const inputs = Array.from(document.querySelectorAll('.nav-input, .lead-field'));
